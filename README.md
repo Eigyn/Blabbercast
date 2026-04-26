@@ -1,76 +1,72 @@
+![Blabbercast banner](docs/assets/blabbercast-banner.png)
+
 # Blabbercast
 
-Local-only Node.js service that reads Twitch and YouTube live chat aloud through a TTS engine of your choice. The server binds to `127.0.0.1` and ships a small browser dashboard for control.
+Blabbercast is a Windows-first, local-only text-to-speech dashboard for livestream chat. It reads Twitch and YouTube live chat, filters messages, queues them, and speaks them through local Piper voices by default.
 
-## What it does
+The app runs on `127.0.0.1`, so it is meant for the streamer sitting at the machine, not remote control or hosted use.
 
-- Connects to Twitch chat via IRC (`tmi.js`) and/or YouTube live chat (unofficial scraping via `youtube-chat`).
-- Sanitises each message (length cap, blocked words/users, command-prefix filter, SSML/HTML stripping, dangerous-unicode and zalgo filtering, URL stripping, per-user and global cooldowns) before queueing.
-- Hands queued text to a Python worker that synthesises audio with one of three engines: **Piper** (local neural), **Microsoft SAPI** (local), or **Edge TTS** (Microsoft Azure, online).
-- Streams the resulting audio to a browser tab over WebSockets so playback uses the browser's audio output.
+## Dependencies And Requirements
 
-## What it does NOT do
+- Windows 10 or 11.
+- Node.js 18 or newer with npm.
+- Python 3.9 or newer with pip.
+- PowerShell, included with Windows, for setup downloads.
+- Internet access during setup for npm packages, Python packages, Piper, and Piper voice models.
+- Optional Twitch app credentials for authenticated Twitch viewer-count calls.
 
-- It does **not** post anything back to Twitch or YouTube — it is read-only.
-- It does **not** open any port outside `127.0.0.1`. There is no remote control surface.
-- It does **not** store or log chat messages to disk.
-- It is **not** affiliated with Twitch, YouTube, or Microsoft.
+The GitHub source repo does not include generated or bulky local files such as `node_modules/`, `runtime/`, `models/`, or `Blabbercast.exe`.
 
-## Requirements
+## Features
 
-- Windows 10 / 11 (the audio host uses the Windows `winmm` MCI API)
-- Node.js 18 or newer
-- Python 3.9+ with `pip install -r requirements.txt` (or only the engines you plan to use)
-- PowerShell, included with Windows 10 / 11, for the Piper download step
+- Twitch chat support through `tmi.js`.
+- YouTube live chat support through `youtube-chat`.
+- Local Piper neural TTS by default, with downloadable voice packs.
+- Optional Microsoft SAPI and Edge TTS engines.
+- Browser dashboard for queue status, controls, voice selection, logs, and settings.
+- Message filtering for blocked words, blocked users, command prefixes, links, SSML/HTML, dangerous Unicode, Zalgo text, message length, and cooldowns.
+- Read-only chat behavior: Blabbercast does not post back to Twitch or YouTube.
+- Local-only HTTP/WebSocket server bound to `127.0.0.1`.
+- Runtime settings are saved to ignored local files, not committed source files.
 
-## Source Setup
+## Setup And Launch
 
-After downloading or cloning the source from GitHub, run:
+After downloading or cloning the source, run:
 
 ```bat
 setup.bat
 ```
 
-Blabbercast ships with `config.example.json` for safe Piper-first defaults. Runtime settings are saved to `config.local.json`, which is gitignored.
-`setup.bat` creates `config.local.json`, `.env`, and `models/` when they are missing. It also downloads Piper's pinned Windows runtime and a starter pack of local voices into `models/` for offline TTS.
+Double-click setup asks which Piper voice pack to install:
+
+- Minimal: 1 voice, fastest download.
+- Starter: 6 English voices, recommended.
+- All: 11 voices, largest download.
 
 Useful setup flags:
 
 ```bat
 setup.bat --check
-setup.bat --skip-piper
-setup.bat --skip-python
 setup.bat --minimal-piper
 setup.bat --starter-piper
 setup.bat --all-piper
+setup.bat --skip-piper
+setup.bat --skip-python
 ```
 
-When run by double-clicking, `setup.bat` asks which Piper voice pack to install. The recommended `starter` pack installs six voices: `en_US-lessac-medium`, `en_US-ryan-medium`, `en_US-amy-low`, `en_GB-alan-medium`, `en_GB-alba-medium`, and `en_GB-cori-medium`. Use `--minimal-piper` for only `en_US-lessac-medium`, or `--all-piper` for every voice in the catalog.
-
-You can inspect or manually download specific Piper voices with:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup-piper.ps1 -List
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup-piper.ps1 -Voices en_US-ryan-medium,en_GB-alba-medium
-```
-
-If you want Twitch live viewer counts and authenticated calls, register an application at <https://dev.twitch.tv/console> and set credentials in `.env`:
-
-```bash
-notepad .env
-```
-
-Environment variables take precedence over local config for credentials. Do not commit `.env`, `config.local.json`, or legacy `config.json`.
-
-## Run
+To launch with a visible console:
 
 ```bat
 Blabbercast.bat
 ```
 
-Double-click `Blabbercast.vbs` if you want to start Blabbercast without the command window.
+To launch quietly without the command window, double-click:
 
-Or run from a terminal:
+```bat
+Blabbercast.vbs
+```
+
+From a terminal, you can also run:
 
 ```bash
 npm run start:open
@@ -78,45 +74,35 @@ npm run start:open
 
 The dashboard opens at <http://localhost:3000>.
 
-## Packaged Windows Build
+For Twitch credentials, copy `.env.example` to `.env` or let `setup.bat` create it, then edit:
 
-The GitHub source release intentionally does not include `Blabbercast.exe`, `node_modules/`, `runtime/`, or `models/`. Those are generated or bundled artifacts.
-
-For a packaged build, `Blabbercast.exe` is the no-setup launcher: it is expected to sit next to the bundled Node/Python runtimes and installed dependencies. `Blabbercast.bat` is the alternate launcher for the same folder, and also works from source after `setup.bat` has installed dependencies.
-
-## Project layout
-
-```
-server.js           Express + WebSocket entry point
-setup.bat           Windows source setup helper
-Blabbercast.bat     Windows launcher for source or packaged folders
-Blabbercast.vbs     Quiet Windows launcher that hides the command window
-config.example.json Safe example settings; local settings are written to config.local.json
-scripts/            Setup helpers, including the Piper runtime/model downloader
-src/
-  adapters/         Twitch + YouTube chat adapter implementations
-  queue/            In-memory FIFO message queue (drop-oldest at 50)
-  security/         Sanitiser + IP-bucketed rate limiter
-  server/           Express routes, WebSocket server, console -> UI log relay
-  settings/         JSON-backed settings with secret redaction + env overrides
-  tts/              Node <-> Python TTS bridge and per-user voice map
-  twitch/           Twitch Helix API client (viewer count polling)
-python/
-  tts_worker.py     Long-lived NDJSON worker: Piper / Edge TTS / SAPI
-public/             Browser dashboard (vanilla JS, no build step)
+```bat
+notepad .env
 ```
 
-## Security notes
+Do not commit `.env`, `config.local.json`, legacy `config.json`, `node_modules/`, `runtime/`, or `models/`.
 
-- All mutating HTTP endpoints require an `X-API-Key` header. The key is generated fresh at every server start (`crypto.randomBytes(32)`) and only handed to same-origin callers via `GET /api/auth/key`.
-- CORS allows only `http://localhost:<port>` and `http://127.0.0.1:<port>`. Same restriction applies to WebSocket origins.
-- Response headers set: `Content-Security-Policy` (self only), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`.
-- Rate limiter caps mutating endpoints at 30 req/min per IP; `/api/shutdown` at 1 req per 10 s.
-- `getSafe()` redacts `clientId` / `clientSecret` from any settings response.
-- Settings are persisted to gitignored `config.local.json` by default. `config.example.json` is the only config file intended for source control.
-- Settings updater rejects `__proto__` / `constructor` / `prototype` keys, validates types against defaults, and ignores writes to non-allowlisted sections.
-- The source setup downloads Piper from the rhasspy GitHub release `2023.11.14-2` and voices from rhasspy's Piper voices repository at tag `v1.0.0`; downloaded files are hash-checked before use.
+## Disclosure
 
-## License
+By using Blabbercast, you acknowledge and agree to the following:
 
-MIT — see `LICENSE.md` for the full text and third-party / use-at-your-own-risk disclaimers.
+- No warranty. This software is provided as-is, without guarantees of reliability, accuracy, availability, or fitness for any particular purpose.
+- Third-party services. Blabbercast can optionally connect to Twitch, YouTube, and Microsoft Edge TTS / Azure endpoints. Those services are governed by their own terms, and you are responsible for using them in compliance with those terms.
+- Content responsibility. Blabbercast reads chat messages aloud. You are responsible for what is spoken on your stream. Filtering tools are provided, but no filter is perfect.
+- Use at your own discretion. You assume the risks associated with using this software, including platform-policy issues, exposure to harmful chat content, audio disruptions, and misuse.
+- No liability. The authors and contributors are not liable for damages, losses, or consequences arising from use of the software.
+- YouTube scraping notice. The YouTube integration uses unofficial methods to read live chat. It is not endorsed by, affiliated with, or guaranteed by YouTube or Google, and it may stop working if YouTube changes its systems.
+- Edge TTS notice. Edge TTS uses Microsoft's online speech service through an unofficial integration. Use may be subject to Microsoft's terms.
+- Piper TTS notice. Local neural voice synthesis is provided by Piper TTS, an open-source project licensed under MIT. Voice models may have their own licenses; check model documentation for details.
+
+Blabbercast's own source code is MIT licensed. Third-party dependencies keep their own licenses and notices. If you redistribute bundled runtimes, `node_modules`, Python packages, Piper binaries, or voice models, include the corresponding third-party license files and comply with their terms.
+
+Notable Python TTS dependency license signals checked during release prep:
+
+- `edge-tts`: LGPLv3 for most files; one bundled SRT composer file is MIT.
+- `pyttsx3`: MPL-2.0.
+- `certifi`: MPL-2.0.
+- `pywin32`: PSF license.
+- `pypiwin32`: package metadata reports `UNKNOWN`; inspect before bundling.
+
+See `LICENSE` for the MIT license text.

@@ -31,8 +31,8 @@ After downloading or cloning the source from GitHub, run:
 setup.bat
 ```
 
-Blabbercast ships with `config.example.json` for safe defaults. Runtime settings are saved to `config.local.json`, which is gitignored.
-`setup.bat` creates `config.local.json`, `.env`, and `models/` when they are missing. It also downloads Piper's pinned Windows runtime and the default `en_US-lessac-medium` voice into `models/` for offline TTS.
+Blabbercast ships with `config.example.json` for safe Piper-first defaults. Runtime settings are saved to `config.local.json`, which is gitignored.
+`setup.bat` creates `config.local.json`, `.env`, and `models/` when they are missing. It also downloads Piper's pinned Windows runtime and a starter pack of local voices into `models/` for offline TTS.
 
 Useful setup flags:
 
@@ -40,6 +40,18 @@ Useful setup flags:
 setup.bat --check
 setup.bat --skip-piper
 setup.bat --skip-python
+setup.bat --minimal-piper
+setup.bat --starter-piper
+setup.bat --all-piper
+```
+
+When run by double-clicking, `setup.bat` asks which Piper voice pack to install. The recommended `starter` pack installs six voices: `en_US-lessac-medium`, `en_US-ryan-medium`, `en_US-amy-low`, `en_GB-alan-medium`, `en_GB-alba-medium`, and `en_GB-cori-medium`. Use `--minimal-piper` for only `en_US-lessac-medium`, or `--all-piper` for every voice in the catalog.
+
+You can inspect or manually download specific Piper voices with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup-piper.ps1 -List
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup-piper.ps1 -Voices en_US-ryan-medium,en_GB-alba-medium
 ```
 
 If you want Twitch live viewer counts and authenticated calls, register an application at <https://dev.twitch.tv/console> and set credentials in `.env`:
@@ -55,6 +67,8 @@ Environment variables take precedence over local config for credentials. Do not 
 ```bat
 Blabbercast.bat
 ```
+
+Double-click `Blabbercast.vbs` if you want to start Blabbercast without the command window.
 
 Or run from a terminal:
 
@@ -76,6 +90,7 @@ For a packaged build, `Blabbercast.exe` is the no-setup launcher: it is expected
 server.js           Express + WebSocket entry point
 setup.bat           Windows source setup helper
 Blabbercast.bat     Windows launcher for source or packaged folders
+Blabbercast.vbs     Quiet Windows launcher that hides the command window
 config.example.json Safe example settings; local settings are written to config.local.json
 scripts/            Setup helpers, including the Piper runtime/model downloader
 src/
@@ -100,7 +115,7 @@ public/             Browser dashboard (vanilla JS, no build step)
 - `getSafe()` redacts `clientId` / `clientSecret` from any settings response.
 - Settings are persisted to gitignored `config.local.json` by default. `config.example.json` is the only config file intended for source control.
 - Settings updater rejects `__proto__` / `constructor` / `prototype` keys, validates types against defaults, and ignores writes to non-allowlisted sections.
-- The source setup downloads Piper from the rhasspy GitHub release `2023.11.14-2` and the `en_US-lessac-medium` voice from rhasspy's Piper voices repository at tag `v1.0.0`; downloaded files are hash-checked before use.
+- The source setup downloads Piper from the rhasspy GitHub release `2023.11.14-2` and voices from rhasspy's Piper voices repository at tag `v1.0.0`; downloaded files are hash-checked before use.
 
 ## License
 

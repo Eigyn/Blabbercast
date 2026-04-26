@@ -6,6 +6,8 @@ cd /d "%~dp0"
 set "CHECK_ONLY=0"
 set "SKIP_PYTHON=0"
 set "SKIP_PIPER=0"
+set "PIPER_SET=starter"
+set "PIPER_SET_REQUESTED=0"
 set "PAUSE_ON_EXIT=1"
 
 :parse_args
@@ -13,6 +15,18 @@ if "%~1"=="" goto args_done
 if /I "%~1"=="--check" set "CHECK_ONLY=1"
 if /I "%~1"=="--skip-python" set "SKIP_PYTHON=1"
 if /I "%~1"=="--skip-piper" set "SKIP_PIPER=1"
+if /I "%~1"=="--minimal-piper" (
+    set "PIPER_SET=minimal"
+    set "PIPER_SET_REQUESTED=1"
+)
+if /I "%~1"=="--starter-piper" (
+    set "PIPER_SET=starter"
+    set "PIPER_SET_REQUESTED=1"
+)
+if /I "%~1"=="--all-piper" (
+    set "PIPER_SET=all"
+    set "PIPER_SET_REQUESTED=1"
+)
 if /I "%~1"=="--no-pause" set "PAUSE_ON_EXIT=0"
 shift
 goto parse_args
@@ -75,13 +89,23 @@ set "PY_EXE="
 set "PY_ARGS="
 if exist "%~dp0runtime\python\python.exe" set "PY_EXE=%~dp0runtime\python\python.exe"
 if not defined PY_EXE (
-    for /f "delims=" %%P in ('where py 2^>nul') do if not defined PY_EXE (
-        set "PY_EXE=%%P"
-        set "PY_ARGS=-3"
+    for /f "delims=" %%P in ('where py 2^>nul') do (
+        if not defined PY_EXE (
+            "%%P" -3 --version >nul 2>&1
+            if not errorlevel 1 (
+                set "PY_EXE=%%P"
+                set "PY_ARGS=-3"
+            )
+        )
     )
 )
 if not defined PY_EXE (
-    for /f "delims=" %%P in ('where python 2^>nul') do if not defined PY_EXE set "PY_EXE=%%P"
+    for /f "delims=" %%P in ('where python 2^>nul') do (
+        if not defined PY_EXE (
+            "%%P" --version >nul 2>&1
+            if not errorlevel 1 set "PY_EXE=%%P"
+        )
+    )
 )
 
 if not defined PY_EXE (
@@ -116,22 +140,24 @@ if "%CHECK_ONLY%"=="0" if exist requirements.txt (
 :after_python
 if "%SKIP_PIPER%"=="1" goto after_piper
 
-if "%CHECK_ONLY%"=="1" (
-    if exist "models\piper.exe" (
-        echo [OK] Piper runtime found
-    ) else (
-        echo [WARN] Piper runtime is missing. Run setup.bat to download it.
-    )
+if "%CHECK_ONLY%"=="0" if "%PIPER_SET_REQUESTED%"=="0" (
+    echo.
+    echo Choose a Piper voice pack:
+    echo   [1] Minimal - 1 voice, fastest download
+    echo   [2] Starter - 6 English voices, recommended
+    echo   [3] All     - 11 voices, largest download
+    choice /C 123 /N /M "Install which voice pack? [1/2/3]: "
+    if errorlevel 3 set "PIPER_SET=all"
+    if errorlevel 2 if not errorlevel 3 set "PIPER_SET=starter"
+    if errorlevel 1 if not errorlevel 2 set "PIPER_SET=minimal"
+)
 
-    if exist "models\en_US-lessac-medium.onnx" if exist "models\en_US-lessac-medium.onnx.json" (
-        echo [OK] Default Piper voice found
-    ) else (
-        echo [WARN] Default Piper voice is missing. Run setup.bat to download it.
-    )
+if "%CHECK_ONLY%"=="1" (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\setup-piper.ps1" -ModelsDir "%~dp0models" -VoiceSet "%PIPER_SET%" -CheckOnly
 ) else (
     echo.
-    echo Installing Piper runtime and default voice...
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\setup-piper.ps1" -ModelsDir "%~dp0models"
+    echo Installing Piper runtime and %PIPER_SET% voice pack...
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\setup-piper.ps1" -ModelsDir "%~dp0models" -VoiceSet "%PIPER_SET%"
     if errorlevel 1 goto fail
 )
 

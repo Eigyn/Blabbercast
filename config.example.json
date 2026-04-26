@@ -13,15 +13,15 @@
     "handle": ""
   },
   "tts": {
-    "engine": "edge-tts",
-    "onlineMode": true,
-    "voice": "ja-JP-NanamiNeural",
+    "engine": "piper",
+    "onlineMode": false,
+    "voice": "en_US-lessac-medium",
     "speaker": "",
-    "volume": 100,
-    "rate": 15,
+    "volume": 80,
+    "rate": 0,
     "paused": false,
-    "speakUsername": true,
-    "allowUserVoices": false
+    "speakUsername": false,
+    "allowUserVoices": true
   },
   "security": {
     "maxMessageLength": 250,

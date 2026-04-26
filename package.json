@@ -1,0 +1,23 @@
+{
+  "name": "blabbercast",
+  "version": "1.0.0",
+  "description": "Local TTS bridge that reads Twitch and YouTube live chat aloud through Piper, SAPI, or Edge TTS.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --no-deprecation server.js",
+    "start:open": "node --no-deprecation server.js --open"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "tmi.js": "^1.8.5",
+    "ws": "^8.20.0",
+    "youtube-chat": "^2.2.0"
+  },
+  "license": "MIT",
+  "private": true
+}

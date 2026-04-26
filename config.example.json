@@ -1,0 +1,43 @@
+{
+  "server": {
+    "port": 3000
+  },
+  "twitch": {
+    "channel": "",
+    "clientId": "",
+    "clientSecret": ""
+  },
+  "youtube": {
+    "videoId": "",
+    "channelId": "",
+    "handle": ""
+  },
+  "tts": {
+    "engine": "edge-tts",
+    "onlineMode": true,
+    "voice": "ja-JP-NanamiNeural",
+    "speaker": "",
+    "volume": 100,
+    "rate": 15,
+    "paused": false,
+    "speakUsername": true,
+    "allowUserVoices": false
+  },
+  "security": {
+    "maxMessageLength": 250,
+    "perUserCooldownMs": 2000,
+    "globalCooldownMs": 0,
+    "blockedWords": [],
+    "blockedUsers": [],
+    "commandPrefixes": [],
+    "blockedWordAction": "censor",
+    "allowLinks": false,
+    "stripSsml": true,
+    "stripZalgo": true,
+    "stripUnicode": true,
+    "stripUrls": true
+  },
+  "ui": {
+    "showLogs": true
+  }
+}

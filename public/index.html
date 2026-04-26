@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+      Blabbercast - Control Interface
+    </title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="void-bg" aria-hidden="true">
+      <canvas id="voidCanvas">
+      </canvas>
+      <div class="nebula nebula-1">
+      </div>
+      <div class="nebula nebula-2">
+      </div>
+      <div class="nebula nebula-3">
+      </div>
+      <div class="nebula nebula-4">
+      </div>
+      <div class="void-grid">
+      </div>
+    </div>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="white" aria-hidden="true">
+            <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm-1 14v-4H7l5-8v4h4l-5 8z"/>
+          </svg>
+        </div>
+        <span class="brand-name">
+          Blabbercast
+        </span>
+        <span class="brand-version">
+          v1.0
+        </span>
+      </div>
+      <div class="platform-badges">
+        <span class="platform-badge twitch" id="twitchBadge" title="Twitch">
+          <svg class="platform-icon" width="11" height="12" viewBox="0 0 16 18" fill="currentColor" aria-hidden="true">
+            <path d="M1.5 0L0 3v13h4.5v2h2.5l2-2H12l4-4V0H1.5zm13 10.5l-3 3H8l-2 2v-2H2V1.5h12.5V10.5zM11 4.5v5H9.5v-5H11zm-3.5 0v5H6v-5h1.5z"/>
+          </svg>
+          <span class="platform-dot" id="twitchDot">
+          </span>
+          <span id="twitchChannelDisplay">
+            Twitch
+          </span>
+        </span>
+        <span class="platform-badge youtube" id="youtubeBadge" title="YouTube">
+          <svg class="platform-icon" width="13" height="10" viewBox="0 0 24 17" fill="currentColor" aria-hidden="true">
+            <path d="M23.8 2.6s-.2-1.7-1-2.4C21.8.1 20.6 0 20 0 16.7-.2 12 0 12 0s-4.7-.2-8 0c-.6.1-1.8.2-2.8 1.2-.7.7-1 2.4-1 2.4S0 4.5 0 6.5v1.8c0 2 .2 3.9.2 3.9s.2 1.7 1 2.4c1 1 2.3.9 2.9 1C6.2 15.8 12 16 12 16s4.7 0 8-.2c.6-.1 1.8-.2 2.8-1.2.7-.7 1-2.4 1-2.4s.2-2 .2-3.9V6.5c-.1-2-.3-3.9-.2-3.9zM9.5 11.5v-6l6.5 3-6.5 3z"/>
+          </svg>
+          <span class="platform-dot" id="youtubeDot">
+          </span>
+          <span id="ytChannelDisplay">
+            YouTube
+          </span>
+        </span>
+        <button class="reconnect-both-btn" id="reconnectBothBtn" title="Reconnect both Twitch and YouTube">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+          Reconnect
+        </button>
+      </div>
+      <div class="topbar-right">
+        <div class="channel-info">
+          <span class="channel-name" id="channelName">
+            —
+          </span>
+          <span class="viewer-count" id="viewerCount" title="Live viewer count (requires Twitch API credentials)">
+          </span>
+        </div>
+        <span class="mode-indicator" id="modeIndicator">
+          LOCAL
+        </span>
+      </div>
+    </header>
+    <main class="main-body">
+      <aside class="sidebar">
+        <div class="online-card" id="onlineCard">
+          <div class="online-card-text">
+            <div class="online-card-title">
+              Online Mode
+            </div>
+            <div class="online-card-sub" id="onlineModeStatus">
+              Not connected
+            </div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="onlineModeToggle">
+            <span class="switch-track">
+              <span class="switch-thumb">
+              </span>
+            </span>
+          </label>
+        </div>
+        <section class="section-card">
+          <header class="section-header">
+            <span>
+              Playback
+            </span>
+          </header>
+          <div class="section-body">
+            <div class="btn-row">
+              <button class="btn btn-primary" id="pauseBtn">
+                <svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor" aria-hidden="true">
+                  <path d="M0 0h3v12H0zM7 0h3v12H7z"/>
+                </svg>
+                <span class="btn-label">
+                  Pause
+                </span>
+              </button>
+              <button class="btn btn-secondary" id="skipBtn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                </svg>
+                <span class="btn-label">
+                  Skip
+                </span>
+              </button>
+              <button class="btn btn-warning" id="clearBtn">
+                <svg width="11" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                </svg>
+                <span class="btn-label">
+                  Clear
+                </span>
+              </button>
+            </div>
+            <div class="queue-status">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z"/>
+              </svg>
+              <span class="queue-status-label">
+                Queue:
+              </span>
+              <span class="queue-status-count" id="queueCount">
+                0
+              </span>
+            </div>
+          </div>
+        </section>
+        <section class="section-card">
+          <header class="section-header">
+            <span>
+              Test TTS
+            </span>
+          </header>
+          <div class="section-body">
+            <div class="test-message-row">
+              <input type="text" id="testMessageInput" placeholder="Type a message to speak…">
+              <button class="btn btn-primary btn-sm" id="testMessageBtn">
+                Speak
+              </button>
+            </div>
+          </div>
+        </section>
+        <section class="section-card">
+          <header class="section-header">
+            <span>
+              Audio
+            </span>
+          </header>
+          <div class="section-body">
+            <div class="slider-group">
+              <label>
+                <span>
+                  Volume
+                </span>
+                <span class="slider-val" id="volumeVal">
+                  80
+                </span>
+              </label>
+              <input type="range" id="volumeSlider" min="0" max="100" value="80">
+            </div>
+            <div class="slider-group">
+              <label>
+                <span>
+                  Rate
+                </span>
+                <span class="slider-val" id="rateVal">
+                  0
+                </span>
+              </label>
+              <input type="range" id="rateSlider" min="-50" max="50" value="0">
+            </div>
+          </div>
+        </section>
+        <section class="section-card">
+          <header class="section-header">
+            <span>
+              Voice Engine
+            </span>
+          </header>
+          <div class="section-body">
+            <div class="select-group">
+              <label>
+                Engine
+              </label>
+              <select id="engineSelect">
+                <option value="piper">
+                  Piper (Local Neural)
+                </option>
+                <option value="sapi">
+                  Microsoft SAPI (Local)
+                </option>
+              </select>
+            </div>
+            <div class="select-group">
+              <label>
+                Voice
+              </label>
+              <select id="voiceSelect">
+                <option value="">
+                  Loading voices...
+                </option>
+              </select>
+            </div>
+            <div class="select-group is-disabled" id="speakerGroup">
+              <label>
+                Speaker
+              </label>
+              <select id="speakerSelect" disabled>
+                <option value="">
+                  No speakers for this voice available...
+                </option>
+              </select>
+            </div>
+          </div>
+        </section>
+        <section class="section-card">
+          <header class="section-header">
+            <span>
+              Options
+            </span>
+          </header>
+          <div class="section-body">
+            <div class="toggle-row">
+              <label class="switch">
+                <input type="checkbox" id="speakUsernameToggle">
+                <span class="switch-track">
+                  <span class="switch-thumb">
+                  </span>
+                </span>
+              </label>
+              <div class="toggle-text">
+                <div class="toggle-text-main">
+                  Speak username before message
+                </div>
+                <div class="toggle-text-sub">
+                  e.g. "User said: hello"
+                </div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <label class="switch">
+                <input type="checkbox" id="allowUserVoicesToggle" checked>
+                <span class="switch-track">
+                  <span class="switch-thumb">
+                  </span>
+                </span>
+              </label>
+              <div class="toggle-text">
+                <div class="toggle-text-main">
+                  Allow chatters to pick voices
+                </div>
+                <div class="toggle-text-sub">
+                  Via !voice command in chat
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="section-card system-card">
+          <header class="section-header">
+            <span>
+              System
+            </span>
+          </header>
+          <div class="section-body">
+            <button class="btn btn-secondary system-btn" id="settingsBtn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.488.488 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94 0 .32.02.64.07.94L2.86 14.54a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 0112 8.4a3.6 3.6 0 010 7.2z"/>
+              </svg>
+              Settings &amp; Connections
+            </button>
+            <button class="btn btn-danger system-btn" id="shutdownBtn" title="Shutdown server">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/>
+              </svg>
+              Shutdown Server
+            </button>
+          </div>
+        </section>
+      </aside>
+      <section class="feed-column">
+        <section class="feed-panel">
+          <header class="feed-header">
+            <div class="feed-header-left">
+              <span class="feed-label">
+                Message Queue
+              </span>
+              <span class="feed-badge" id="feedCount">
+                0
+              </span>
+            </div>
+            <button class="btn btn-ghost btn-sm" id="feedClearBtn">
+              Clear all
+            </button>
+          </header>
+          <div class="feed" id="feed">
+            <div id="feedList">
+              <div class="feed-empty">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/>
+                </svg>
+                <span class="feed-empty-main">
+                  Waiting for chat messages…
+                </span>
+                <span class="feed-empty-sub">
+                  Go online to start receiving
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="log-panel" id="logPanel">
+          <header class="feed-header">
+            <div class="feed-header-left">
+              <span class="feed-label">
+                Server Log
+              </span>
+              <span class="feed-badge" id="logCount">
+                0
+              </span>
+            </div>
+          </header>
+          <div class="log-feed" id="logFeed">
+            <div id="logList">
+              <div class="log-empty">
+                No log output yet.
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+    <div class="settings-panel" id="settingsPanel">
+      <div class="settings-overlay" id="settingsOverlay">
+      </div>
+      <div class="settings-content">
+        <div class="settings-header">
+          <h2>
+            Settings &amp; Connections
+          </h2>
+          <button class="btn btn-ghost btn-sm" id="closeSettings" aria-label="Close settings">
+            Close
+          </button>
+        </div>
+        <div class="settings-section-block">
+          <div class="conn-platform-header twitch-header">
+            <svg width="12" height="13" viewBox="0 0 16 18" fill="currentColor" aria-hidden="true">
+              <path d="M1.5 0L0 3v13h4.5v2h2.5l2-2H12l4-4V0H1.5zm13 10.5l-3 3H8l-2 2v-2H2V1.5h12.5V10.5zM11 4.5v5H9.5v-5H11zm-3.5 0v5H6v-5h1.5z"/>
+            </svg>
+            Twitch
+            <span class="platform-dot" id="settingsTwitchDot" style="margin-left:auto">
+            </span>
+          </div>
+          <div class="conn-field-group">
+            <label for="twitchChannelInput">
+              Channel Name
+            </label>
+            <input type="text" id="twitchChannelInput" placeholder="e.g. yourchannelname" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="conn-field-group">
+            <label for="twitchClientIdInput">
+              Client ID
+            </label>
+            <input type="text" id="twitchClientIdInput" placeholder="Twitch app Client ID" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="conn-field-group">
+            <label for="twitchClientSecretInput">
+              Client Secret
+            </label>
+            <input type="password" id="twitchClientSecretInput" placeholder="Twitch app Client Secret" autocomplete="new-password">
+            <button class="reveal-btn" data-target="twitchClientSecretInput" title="Show/hide">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="conn-save-row">
+            <button class="btn btn-primary btn-sm" id="saveTwitchBtn">
+              Save Twitch
+            </button>
+          </div>
+          <div class="conn-divider">
+          </div>
+          <div class="conn-platform-header yt-header">
+            <svg width="14" height="11" viewBox="0 0 24 17" fill="currentColor" aria-hidden="true">
+              <path d="M23.8 2.6s-.2-1.7-1-2.4C21.8.1 20.6 0 20 0 16.7-.2 12 0 12 0s-4.7-.2-8 0c-.6.1-1.8.2-2.8 1.2-.7.7-1 2.4-1 2.4S0 4.5 0 6.5v1.8c0 2 .2 3.9.2 3.9s.2 1.7 1 2.4c1 1 2.3.9 2.9 1C6.2 15.8 12 16 12 16s4.7 0 8-.2c.6-.1 1.8-.2 2.8-1.2.7-.7 1-2.4 1-2.4s.2-2 .2-3.9V6.5c-.1-2-.3-3.9-.2-3.9zM9.5 11.5v-6l6.5 3-6.5 3z"/>
+            </svg>
+            YouTube
+            <span class="platform-dot" id="settingsYtDot" style="margin-left:auto">
+            </span>
+          </div>
+          <div class="conn-field-group">
+            <label for="ytHandleInput">
+              Channel Handle
+            </label>
+            <input type="text" id="ytHandleInput" placeholder="e.g. @yourchannel" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="conn-field-group">
+            <label for="ytChannelIdInput">
+              Channel ID
+            </label>
+            <input type="text" id="ytChannelIdInput" placeholder="e.g. UCxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="conn-field-group">
+            <label for="ytVideoIdInput">
+              Video / Stream ID
+              <span class="field-hint">
+                (optional — auto-detected if blank)
+              </span>
+            </label>
+            <input type="text" id="ytVideoIdInput" placeholder="e.g. dQw4w9WgXcQ" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="conn-save-row">
+            <button class="btn btn-primary btn-sm" id="saveYoutubeBtn">
+              Save YouTube
+            </button>
+          </div>
+        </div>
+        <h3>
+          Cooldowns
+        </h3>
+        <div class="slider-group">
+          <label>
+            <span>
+              Per-User Cooldown
+            </span>
+            <span class="slider-val" id="userCooldownVal">
+              5s
+            </span>
+          </label>
+          <input type="range" id="userCooldownSlider" min="0" max="60" value="5">
+        </div>
+        <div class="slider-group">
+          <label>
+            <span>
+              Global Cooldown
+            </span>
+            <span class="slider-val" id="globalCooldownVal">
+              2s
+            </span>
+          </label>
+          <input type="range" id="globalCooldownSlider" min="0" max="30" value="2">
+        </div>
+        <div class="slider-group">
+          <label>
+            <span>
+              Max Message Length
+            </span>
+            <span class="slider-val" id="maxLengthVal">
+              200
+            </span>
+          </label>
+          <input type="range" id="maxLengthSlider" min="20" max="500" value="200" step="10">
+        </div>
+        <h3>
+          Interface
+        </h3>
+        <div class="toggle-row compact">
+          <label class="switch">
+            <input type="checkbox" id="showLogsToggle" checked>
+            <span class="switch-track">
+              <span class="switch-thumb">
+              </span>
+            </span>
+          </label>
+          <div class="toggle-text">
+            <div class="toggle-text-main">
+              Show log window
+            </div>
+          </div>
+        </div>
+        <h3>
+          Security Filters
+        </h3>
+        <div class="toggle-row compact">
+          <label class="switch">
+            <input type="checkbox" id="stripSsmlToggle" checked>
+            <span class="switch-track">
+              <span class="switch-thumb">
+              </span>
+            </span>
+          </label>
+          <div class="toggle-text">
+            <div class="toggle-text-main">
+              Strip SSML/HTML tags
+            </div>
+          </div>
+        </div>
+        <div class="toggle-row compact">
+          <label class="switch">
+            <input type="checkbox" id="stripZalgoToggle" checked>
+            <span class="switch-track">
+              <span class="switch-thumb">
+              </span>
+            </span>
+          </label>
+          <div class="toggle-text">
+            <div class="toggle-text-main">
+              Strip Zalgo text
+            </div>
+          </div>
+        </div>
+        <div class="toggle-row compact">
+          <label class="switch">
+            <input type="checkbox" id="stripUnicodeToggle" checked>
+            <span class="switch-track">
+              <span class="switch-thumb">
+              </span>
+            </span>
+          </label>
+          <div class="toggle-text">
+            <div class="toggle-text-main">
+              Strip dangerous Unicode
+            </div>
+          </div>
+        </div>
+        <div class="toggle-row compact">
+          <label class="switch">
+            <input type="checkbox" id="stripUrlsToggle" checked>
+            <span class="switch-track">
+              <span class="switch-thumb">
+              </span>
+            </span>
+          </label>
+          <div class="toggle-text">
+            <div class="toggle-text-main">
+              Strip URLs
+            </div>
+          </div>
+        </div>
+        <h3>
+          Blocked Words
+        </h3>
+        <div class="blocklist-input">
+          <input type="text" id="blockWordInput" placeholder="Add word...">
+          <button class="btn btn-secondary btn-sm" id="addBlockWord">
+            Add
+          </button>
+        </div>
+        <div class="blocklist-tags" id="blockedWordTags">
+        </div>
+        <h3>
+          Command Prefixes
+        </h3>
+        <div class="blocklist-input">
+          <input type="text" id="prefixInput" placeholder="Add prefix (e.g. !)">
+          <button class="btn btn-secondary btn-sm" id="addPrefix">
+            Add
+          </button>
+        </div>
+        <div class="blocklist-tags" id="prefixTags">
+        </div>
+        <h3>
+          Blocked Users
+        </h3>
+        <div class="blocklist-input">
+          <input type="text" id="blockUserInput" placeholder="Add username...">
+          <button class="btn btn-secondary btn-sm" id="addBlockUser">
+            Add
+          </button>
+        </div>
+        <div class="blocklist-tags" id="blockedUserTags">
+        </div>
+      </div>
+    </div>
+    <div class="toast-container" id="toastContainer">
+    </div>
+    <script src="visuals.js">
+    </script>
+    <script src="app.js">
+    </script>
+  </body>
+</html>

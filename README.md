@@ -13,7 +13,6 @@ The app runs on `127.0.0.1`, so it is meant for the streamer sitting at the mach
 - Python 3.9 or newer with pip.
 - PowerShell, included with Windows, for setup downloads.
 - Internet access during setup for npm packages, Python packages, Piper, and Piper voice models.
-- Optional Twitch app credentials for authenticated Twitch viewer-count calls.
 
 The GitHub source repo does not include generated or bulky local files such as `node_modules/`, `runtime/`, `models/`, or `Blabbercast.exe`.
 
@@ -73,14 +72,6 @@ npm run start:open
 ```
 
 The dashboard opens at <http://localhost:3000>.
-
-For Twitch credentials, copy `.env.example` to `.env` or let `setup.bat` create it, then edit:
-
-```bat
-notepad .env
-```
-
-Do not commit `.env`, `config.local.json`, legacy `config.json`, `node_modules/`, `runtime/`, or `models/`.
 
 ## Disclosure
 

@@ -21,7 +21,7 @@ Local-only Node.js service that reads Twitch and YouTube live chat aloud through
 - Windows 10 / 11 (the audio host uses the Windows `winmm` MCI API)
 - Node.js 18 or newer
 - Python 3.9+ with `pip install -r requirements.txt` (or only the engines you plan to use)
-- For Piper: download `piper.exe` and at least one `.onnx` voice model into `./models/`
+- PowerShell, included with Windows 10 / 11, for the Piper download step
 
 ## Source Setup
 
@@ -32,7 +32,15 @@ setup.bat
 ```
 
 Blabbercast ships with `config.example.json` for safe defaults. Runtime settings are saved to `config.local.json`, which is gitignored.
-`setup.bat` creates `config.local.json`, `.env`, and `models/` when they are missing.
+`setup.bat` creates `config.local.json`, `.env`, and `models/` when they are missing. It also downloads Piper's pinned Windows runtime and the default `en_US-lessac-medium` voice into `models/` for offline TTS.
+
+Useful setup flags:
+
+```bat
+setup.bat --check
+setup.bat --skip-piper
+setup.bat --skip-python
+```
 
 If you want Twitch live viewer counts and authenticated calls, register an application at <https://dev.twitch.tv/console> and set credentials in `.env`:
 
@@ -69,6 +77,7 @@ server.js           Express + WebSocket entry point
 setup.bat           Windows source setup helper
 Blabbercast.bat     Windows launcher for source or packaged folders
 config.example.json Safe example settings; local settings are written to config.local.json
+scripts/            Setup helpers, including the Piper runtime/model downloader
 src/
   adapters/         Twitch + YouTube chat adapter implementations
   queue/            In-memory FIFO message queue (drop-oldest at 50)
@@ -91,6 +100,7 @@ public/             Browser dashboard (vanilla JS, no build step)
 - `getSafe()` redacts `clientId` / `clientSecret` from any settings response.
 - Settings are persisted to gitignored `config.local.json` by default. `config.example.json` is the only config file intended for source control.
 - Settings updater rejects `__proto__` / `constructor` / `prototype` keys, validates types against defaults, and ignores writes to non-allowlisted sections.
+- The source setup downloads Piper from the rhasspy GitHub release `2023.11.14-2` and the `en_US-lessac-medium` voice from rhasspy's Piper voices repository at tag `v1.0.0`; downloaded files are hash-checked before use.
 
 ## License
 

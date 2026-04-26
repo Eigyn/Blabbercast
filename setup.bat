@@ -5,12 +5,14 @@ cd /d "%~dp0"
 
 set "CHECK_ONLY=0"
 set "SKIP_PYTHON=0"
+set "SKIP_PIPER=0"
 set "PAUSE_ON_EXIT=1"
 
 :parse_args
 if "%~1"=="" goto args_done
 if /I "%~1"=="--check" set "CHECK_ONLY=1"
 if /I "%~1"=="--skip-python" set "SKIP_PYTHON=1"
+if /I "%~1"=="--skip-piper" set "SKIP_PIPER=1"
 if /I "%~1"=="--no-pause" set "PAUSE_ON_EXIT=0"
 shift
 goto parse_args
@@ -112,6 +114,28 @@ if "%CHECK_ONLY%"=="0" if exist requirements.txt (
 )
 
 :after_python
+if "%SKIP_PIPER%"=="1" goto after_piper
+
+if "%CHECK_ONLY%"=="1" (
+    if exist "models\piper.exe" (
+        echo [OK] Piper runtime found
+    ) else (
+        echo [WARN] Piper runtime is missing. Run setup.bat to download it.
+    )
+
+    if exist "models\en_US-lessac-medium.onnx" if exist "models\en_US-lessac-medium.onnx.json" (
+        echo [OK] Default Piper voice found
+    ) else (
+        echo [WARN] Default Piper voice is missing. Run setup.bat to download it.
+    )
+) else (
+    echo.
+    echo Installing Piper runtime and default voice...
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\setup-piper.ps1" -ModelsDir "%~dp0models"
+    if errorlevel 1 goto fail
+)
+
+:after_piper
 if "%CHECK_ONLY%"=="0" (
     if not exist "models\" mkdir "models"
     if not exist "config.local.json" if exist "config.example.json" copy /Y "config.example.json" "config.local.json" >nul

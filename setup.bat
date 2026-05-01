@@ -4,6 +4,8 @@ title Blabbercast Setup
 cd /d "%~dp0"
 
 set "CHECK_ONLY=0"
+set "SKIP_RUNTIMES=0"
+set "FORCE_RUNTIMES=0"
 set "SKIP_PYTHON=0"
 set "SKIP_PIPER=0"
 set "PIPER_SET=starter"
@@ -13,6 +15,8 @@ set "PAUSE_ON_EXIT=1"
 :parse_args
 if "%~1"=="" goto args_done
 if /I "%~1"=="--check" set "CHECK_ONLY=1"
+if /I "%~1"=="--skip-runtimes" set "SKIP_RUNTIMES=1"
+if /I "%~1"=="--force-runtimes" set "FORCE_RUNTIMES=1"
 if /I "%~1"=="--skip-python" set "SKIP_PYTHON=1"
 if /I "%~1"=="--skip-piper" set "SKIP_PIPER=1"
 if /I "%~1"=="--minimal-piper" (
@@ -38,6 +42,25 @@ echo Blabbercast setup
 echo =================
 echo.
 
+set "RUNTIME_CHECK_FLAG="
+set "RUNTIME_FORCE_FLAG="
+set "RUNTIME_PYTHON_FLAG="
+if "%CHECK_ONLY%"=="1" set "RUNTIME_CHECK_FLAG=-CheckOnly"
+if "%FORCE_RUNTIMES%"=="1" set "RUNTIME_FORCE_FLAG=-Force"
+if "%SKIP_PYTHON%"=="1" set "RUNTIME_PYTHON_FLAG=-SkipPython"
+
+if "%SKIP_RUNTIMES%"=="0" (
+    if "%CHECK_ONLY%"=="1" (
+        echo Checking app-local Node.js and Python runtimes...
+    ) else (
+        echo Installing app-local Node.js and Python runtimes...
+    )
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\setup-runtimes.ps1" -RuntimeDir "%~dp0runtime" %RUNTIME_CHECK_FLAG% %RUNTIME_FORCE_FLAG% %RUNTIME_PYTHON_FLAG%
+    if errorlevel 1 goto fail
+) else (
+    echo [INFO] Skipping app-local runtime installation.
+)
+
 set "NODE_CMD="
 if exist "%~dp0runtime\node\node.exe" (
     set "NODE_CMD=%~dp0runtime\node\node.exe"
@@ -47,13 +70,22 @@ if not defined NODE_CMD (
     for /f "delims=" %%N in ('where node 2^>nul') do if not defined NODE_CMD set "NODE_CMD=%%N"
 )
 if not defined NODE_CMD (
-    echo [ERROR] Node.js 18 or newer is required.
-    echo Download it from https://nodejs.org/
+    if "%CHECK_ONLY%"=="1" (
+        echo [WARN] Node.js runtime was not found. Run setup.bat to install it.
+        goto after_node
+    )
+    echo [ERROR] Node.js runtime was not installed and no system Node.js was found.
+    echo        Run setup.bat again, or use --skip-runtimes only if Node.js is already installed.
     goto fail
 )
 
 "%NODE_CMD%" -e "const major=Number(process.versions.node.split('.')[0]); process.exit(major>=18?0:1)"
 if errorlevel 1 (
+    if "%CHECK_ONLY%"=="1" (
+        echo [WARN] Node.js 18 or newer is required.
+        "%NODE_CMD%" --version
+        goto after_node
+    )
     echo [ERROR] Node.js 18 or newer is required.
     "%NODE_CMD%" --version
     goto fail
@@ -67,7 +99,11 @@ if not defined NPM_CMD (
     for /f "delims=" %%N in ('where npm 2^>nul') do if not defined NPM_CMD set "NPM_CMD=%%N"
 )
 if not defined NPM_CMD (
-    echo [ERROR] npm was not found. Reinstall Node.js with npm enabled.
+    if "%CHECK_ONLY%"=="1" (
+        echo [WARN] npm was not found. Run setup.bat to install the app-local runtime.
+        goto after_node
+    )
+    echo [ERROR] npm was not found. Run setup.bat again to install the app-local runtime.
     goto fail
 )
 echo [OK] npm found
@@ -83,6 +119,7 @@ if "%CHECK_ONLY%"=="0" (
     if errorlevel 1 goto fail
 )
 
+:after_node
 if "%SKIP_PYTHON%"=="1" goto after_python
 
 set "PY_EXE="
@@ -110,14 +147,28 @@ if not defined PY_EXE (
 
 if not defined PY_EXE (
     echo.
-    echo [WARN] Python 3.9+ was not found.
-    echo        TTS engines need Python. Install it from https://www.python.org/downloads/windows/
-    echo        Then rerun setup.bat.
+    if "%CHECK_ONLY%"=="1" (
+        echo [WARN] Python runtime was not found. Run setup.bat to install it.
+    ) else (
+        echo [ERROR] Python runtime was not installed and no system Python was found.
+        echo        Run setup.bat again, or use --skip-python only if you do not need Python TTS engines.
+        goto fail
+    )
     goto after_python
 )
 
 for /f "delims=" %%V in ('"%PY_EXE%" %PY_ARGS% --version 2^>^&1') do set "PY_VERSION=%%V"
 echo [OK] %PY_VERSION%
+
+"%PY_EXE%" %PY_ARGS% -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 9) else 1)"
+if errorlevel 1 (
+    if "%CHECK_ONLY%"=="1" (
+        echo [WARN] Python 3.9 or newer is required.
+        goto after_python
+    )
+    echo [ERROR] Python 3.9 or newer is required.
+    goto fail
+)
 
 "%PY_EXE%" %PY_ARGS% -m pip --version >nul 2>&1
 if errorlevel 1 (
@@ -133,7 +184,7 @@ if errorlevel 1 (
 if "%CHECK_ONLY%"=="0" if exist requirements.txt (
     echo.
     echo Installing Python TTS dependencies...
-    "%PY_EXE%" %PY_ARGS% -m pip install -r requirements.txt
+    "%PY_EXE%" %PY_ARGS% -m pip install --disable-pip-version-check --no-warn-script-location -r requirements.txt
     if errorlevel 1 goto fail
 )
 
@@ -173,7 +224,7 @@ echo.
 if "%CHECK_ONLY%"=="1" (
     echo Check complete. Run setup.bat without --check to install dependencies.
 ) else (
-    echo Setup complete. Launch with Blabbercast.bat or npm start.
+    echo Setup complete. Launch with Blabbercast.vbs or Blabbercast.bat.
 )
 if "%PAUSE_ON_EXIT%"=="1" (
     echo.

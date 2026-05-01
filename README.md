@@ -9,12 +9,12 @@ The app runs on `127.0.0.1`, so it is meant for the streamer sitting at the mach
 ## Dependencies And Requirements
 
 - Windows 10 or 11.
-- Node.js 18 or newer with npm.
-- Python 3.9 or newer with pip.
-- PowerShell, included with Windows, for setup downloads.
-- Internet access during setup for npm packages, Python packages, Piper, and Piper voice models.
+- PowerShell, included with Windows.
+- Internet access during first setup for app runtimes, npm packages, Python packages, Piper, and Piper voice models.
 
-The GitHub source repo does not include generated or bulky local files such as `node_modules/`, `runtime/`, `models/`, or `Blabbercast.exe`.
+You do not need to install Node.js or Python first. `setup.bat` downloads private, app-local copies into `runtime\`, then installs the needed packages for Blabbercast. It does not require admin rights and does not change your global PATH.
+
+The GitHub source repo does not include generated or bulky local files such as `node_modules/`, `runtime/`, `models/`, or `Blabbercast.exe`; setup creates those local folders as needed.
 
 ## Features
 
@@ -36,6 +36,13 @@ After downloading or cloning the source, run:
 setup.bat
 ```
 
+Setup installs:
+
+- Portable Node.js for the web server.
+- Portable Python with pip for the TTS worker.
+- Node and Python package dependencies.
+- Piper runtime and the selected Piper voice models.
+
 Double-click setup asks which Piper voice pack to install:
 
 - Minimal: 1 voice, fastest download.
@@ -51,6 +58,8 @@ setup.bat --starter-piper
 setup.bat --all-piper
 setup.bat --skip-piper
 setup.bat --skip-python
+setup.bat --skip-runtimes
+setup.bat --force-runtimes
 ```
 
 To launch with a visible console:
@@ -67,8 +76,8 @@ Blabbercast.vbs
 
 From a terminal, you can also run:
 
-```bash
-npm run start:open
+```bat
+runtime\node\npm.cmd run start:open
 ```
 
 The dashboard opens at <http://localhost:3000>.

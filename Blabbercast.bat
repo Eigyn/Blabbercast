@@ -13,8 +13,24 @@ if not defined NODE_CMD (
     for /f "delims=" %%N in ('where node 2^>nul') do if not defined NODE_CMD set "NODE_CMD=%%N"
 )
 if not defined NODE_CMD (
-    echo Could not find Node.js.
-    echo Install Node.js 18+ from https://nodejs.org/ or run the packaged Blabbercast.exe build.
+    echo Node.js is not installed for Blabbercast yet.
+    if exist "%~dp0setup.bat" (
+        choice /C YN /M "Run setup.bat now"
+        if errorlevel 2 exit /b 1
+        call "%~dp0setup.bat" --no-pause
+        if errorlevel 1 (
+            echo Setup failed. Review the messages above.
+            pause
+            exit /b 1
+        )
+        if exist "%~dp0runtime\node\node.exe" (
+            set "NODE_CMD=%~dp0runtime\node\node.exe"
+            set "PATH=%~dp0runtime\node;%PATH%"
+        )
+    )
+)
+if not defined NODE_CMD (
+    echo Could not find Node.js after setup.
     pause
     exit /b 1
 )
